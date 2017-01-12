@@ -113,6 +113,7 @@
                                                   * its own image insertion dialog, this hook should return true, and the callback should be called with the chosen
                                                   * image url (or null if the user cancelled). If this hook returns false, the default dialog will be used.
                                                   */
+        hooks.addNoop("imageConvertedToLink");  // called with no arguments if an image was converted 
 
         this.getConverter = function () { return markdownConverter; }
 
@@ -1883,6 +1884,10 @@
                         else {
                             chunk.selection = that.getString("linkdescription");
                         }
+                    }
+
+                    if (isImage && convertImagesToLinks) {
+                        that.hooks.imageConvertedToLink();
                     }
                 }
                 postProcessing();
