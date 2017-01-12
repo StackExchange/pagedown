@@ -30,8 +30,24 @@
     function sanitizeTag(tag) {
         if (tag.match(basic_tag_whitelist) || tag.match(a_white) || tag.match(img_white))
             return tag;
-        else
-            return "";
+        else {
+            var anyChange = false;
+            // if it looks like it *might* be valid, then try percent-encoding illegal characters in the src or href attribute
+            // and then try the whitelist again -- if that fixes it, then replace the found tag with the fixed one.
+            var encoded = tag.replace(/^(<a href="|<img src=")([^"]*)/i, function (wholematch, prefix, url) {
+                return prefix + url.replace(/[^-A-Za-z0-9+&@#\/%?=~_|!:,.;\(\)*[\]$]/g, function (c) {
+                    anyChange = true;
+                    if (c == "'") // this is the only character that isn't in our whitelist and that is returned unchanged by encodeURIComponent()
+                        return "%27";
+                    else
+                        return encodeURIComponent(c);
+                    
+                });
+            });
+            if (anyChange && (encoded.match(a_white) || encoded.match(img_white)))
+                return encoded;
+        }
+        return "";
     }
 
     /// <summary>
