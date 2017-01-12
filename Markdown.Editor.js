@@ -117,6 +117,9 @@
                                                   * image url (or null if the user cancelled). If this hook returns false, the default dialog will be used.
                                                   */
         hooks.addNoop("imageConvertedToLink");  // called with no arguments if an image was converted 
+        hooks.addFalse("insertLinkDialog");     /* called with one parameter: a callback to be called with the URL.
+                                                 * works identical to insertImageDialog (see above)
+                                                 */
 
         this.getConverter = function () { return markdownConverter; }
 
@@ -1895,7 +1898,8 @@
                     ui.prompt(this.getString("imagedialog"), imageDefaultText, this.getString("ok"), this.getString("cancel"), linkEnteredCallback);
             }
             else {
-                ui.prompt(this.getString("linkdialog"), linkDefaultText, this.getString("ok"), this.getString("cancel"), linkEnteredCallback);
+                if (!this.hooks.insertLinkDialog(linkEnteredCallback))
+                    ui.prompt(this.getString("linkdialog"), linkDefaultText, this.getString("ok"), this.getString("cancel"), linkEnteredCallback);
             }
             return true;
         }
