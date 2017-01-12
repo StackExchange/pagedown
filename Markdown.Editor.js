@@ -75,6 +75,7 @@
     //   options.helpButton = { handler: yourEventHandler }
     //   options.strings = { italicexample: "slanted text" }
     //   options.wrapImageInLink = true
+    //   options.convertImagesToLinks = true
     // `yourEventHandler` is the click handler for the help button.
     // If `options.helpButton` isn't given, not help button is created.
     // `options.strings` can have any or all of the same properties as
@@ -123,7 +124,7 @@
                 return; // already initialized
 
             panels = new PanelCollection(idPostfix);
-            var commandManager = new CommandManager(hooks, getString, markdownConverter, options.wrapImageInLink);
+            var commandManager = new CommandManager(hooks, getString, markdownConverter, options.wrapImageInLink, options.convertImagesToLinks);
             var previewManager = new PreviewManager(markdownConverter, panels, function () { hooks.onPreviewRefresh(); });
             var undoManager, uiManager;
 
@@ -1527,11 +1528,12 @@
 
     }
 
-    function CommandManager(pluginHooks, getString, converter, wrapImageInLink) {
+    function CommandManager(pluginHooks, getString, converter, wrapImageInLink, convertImagesToLinks) {
         this.hooks = pluginHooks;
         this.getString = getString;
         this.converter = converter;
         this.wrapImageInLink = wrapImageInLink;
+        this.convertImagesToLinks = convertImagesToLinks;
     }
 
     var commandProto = CommandManager.prototype;
@@ -1807,6 +1809,7 @@
         chunk.findTags(/\s*!?\[/, /\][ ]?(?:\n[ ]*)?(\[.*?\])?/);
         var background;
         var wrapImageInLink = this.wrapImageInLink;
+        var convertImagesToLinks = this.convertImagesToLinks;
 
         if (chunk.endTag.length > 1 && chunk.startTag.length > 0) {
 
@@ -1858,14 +1861,18 @@
                     var linkDef = " [999]: " + properlyEncoded(link);
 
                     var num = that.addLinkDef(chunk, linkDef);
-                    if (!isImage || wrapImageInLink)
+                    if (!isImage || (wrapImageInLink && !convertImagesToLinks))
                     {
                         chunk.startTag = "[";
                         chunk.endTag = "][" + num + "]";
                     }
                     if (isImage)
                     {
-                        chunk.startTag += "![";
+                        if (!convertImagesToLinks) {
+                            chunk.startTag += "![";
+                        } else {
+                            chunk.startTag += "[";
+                        }
                         chunk.endTag = "][" + num + "]" + chunk.endTag;
                     }
 
