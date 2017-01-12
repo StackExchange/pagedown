@@ -1691,10 +1691,19 @@
             return rendered.indexOf(testlink + offset + "/unicorn") !== -1;
         }
         
-        var addDefNumber = function (def) {
+        // property names are "L_" + link (prefixed to prevent collisions with built-in properties),
+        // values are the definition numbers
+        var addedDefsByUrl = {};
+        var addOrReuseDefNumber = function (def) {
+            var stripped = def.replace(/^[ ]{0,3}\[(\d+)\]:/, "");
+            var key = "L_" + stripped;
+            if (key in addedDefsByUrl)
+                return addedDefsByUrl[key];
             refNumber++;
-            def = def.replace(/^[ ]{0,3}\[(\d+)\]:/, "  [" + refNumber + "]:");
+            def = "  [" + refNumber + "]:" + stripped;
             defs += "\n" + def;
+            addedDefsByUrl[key] = refNumber;
+            return refNumber;
         };
 
         // note that
@@ -1709,8 +1718,8 @@
             inner = inner.replace(regex, getLink);
             skippedChars -= offset + before.length;
             if (defsToAdd[id]) {
-                addDefNumber(defsToAdd[id]);
-                return before + inner + afterInner + refNumber + end;
+                var refnum = addOrReuseDefNumber(defsToAdd[id]);
+                return before + inner + afterInner + refnum + end;
             }
             return wholeMatch;
         };
@@ -1720,15 +1729,14 @@
         skippedChars += len;
         
         len = chunk.selection.length;
+        var refOut;
         if (linkDef) {
-            addDefNumber(linkDef);
+            refOut = addOrReuseDefNumber(linkDef);
         }
         else {
             chunk.selection = chunk.selection.replace(regex, getLink);
         }
         skippedChars += len;        
-
-        var refOut = refNumber;
 
         chunk.after = chunk.after.replace(regex, getLink);
 
