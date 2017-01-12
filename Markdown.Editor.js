@@ -1643,7 +1643,7 @@
         chunk.after = this.stripLinkDefs(chunk.after, defsToAdd);
 
         var defs = "";
-        var regex = /(\[)((?:\[[^\]]*\]|[^\[\]])*)(\][ ]?(?:\n[ ]*)?\[)(\d+)(\])/g;
+        var regex = /\[(\d+)\]/g;
         
         // The above regex, used to update [foo][13] references after renumbering,
         // is much too liberal; it can catch things that are not actually parsed
@@ -1669,23 +1669,9 @@
         
         var fakedefs = "\n\n";
 
-        // the regex is tested on the (up to) three chunks separately, and on substrings,
-        // so in order to have the correct offsets to check against okayToModify(), we
-        // have to keep track of how many characters are in the original source before
-        // the substring that we're looking at. Note that doLinkOrImage aligns the selection
-        // on potential brackets, so there should be no major breakage from the chunk
-        // separation.
-        var skippedChars = 0;
-
-        var uniquified = complete.replace(regex, function uniquify(wholeMatch, before, inner, afterInner, id, end, offset) {
-            skippedChars += offset;
-            fakedefs += " [" + skippedChars + "]: " + testlink + skippedChars + "/unicorn\n";
-            skippedChars += before.length;
-            inner = inner.replace(regex, uniquify);
-            skippedChars -= before.length;
-            var result = before + inner + afterInner + skippedChars + end;
-            skippedChars -= offset;
-            return result;
+        var uniquified = complete.replace(regex, function uniquify(wholeMatch, id, offset) {
+            fakedefs += " [" + offset + "]: " + testlink + offset + "/unicorn\n";
+            return "[" + offset + "]";
         });
         
         rendered = this.converter.makeHtml(uniquified + fakedefs);
@@ -1709,20 +1695,25 @@
             return refNumber;
         };
 
+        // the regex is tested on the (up to) three chunks separately,
+        // so in order to have the correct offsets to check against okayToModify(), we
+        // have to keep track of how many characters are in the original source before
+        // the substring that we're looking at. Note that doLinkOrImage aligns the selection
+        // on potential brackets, so there should be no major breakage from the chunk
+        // separation.
+        var skippedChars = 0;
+
         // note that
         // a) the recursive call to getLink cannot go infinite, because by definition
         //    of regex, inner is always a proper substring of wholeMatch, and
         // b) more than one level of nesting is neither supported by the regex
         //    nor making a lot of sense (the only use case for nesting is a linked image)
-        var getLink = function (wholeMatch, before, inner, afterInner, id, end, offset) {
+        var getLink = function (wholeMatch, id, offset) {
             if (!okayToModify(skippedChars + offset))
                 return wholeMatch;
-            skippedChars += offset + before.length;
-            inner = inner.replace(regex, getLink);
-            skippedChars -= offset + before.length;
             if (defsToAdd[id]) {
                 var refnum = addOrReuseDefNumber(defsToAdd[id]);
-                return before + inner + afterInner + refnum + end;
+                return "[" + refnum + "]";
             }
             return wholeMatch;
         };
