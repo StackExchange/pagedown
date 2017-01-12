@@ -106,8 +106,10 @@
             options.strings.help = options.strings.help || options.helpButton.title;
         }
         var getString = function (identifier) { return options.strings[identifier] || defaultsStrings[identifier]; }
-
+        
         idPostfix = idPostfix || "";
+
+        this.getPostfix = function () { return idPostfix; }
 
         var hooks = this.hooks = new Markdown.HookCollection();
         hooks.addNoop("onPreviewRefresh");       // called with no arguments after the preview has been refreshed
