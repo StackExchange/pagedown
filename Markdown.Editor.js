@@ -51,7 +51,10 @@
         redo: "Redo - Ctrl+Y",
         redomac: "Redo - Ctrl+Shift+Z",
 
-        help: "Markdown Editing Help"
+        help: "Markdown Editing Help",
+
+        ok: "OK",
+        cancel: "Cancel"
     };
 
 
@@ -1062,10 +1065,12 @@
     //
     // text: The html for the input box.
     // defaultInputText: The default value that appears in the input box.
+    // ok: The text for the OK button
+    // cancel: The text for the Cancel button
     // callback: The function which is executed when the prompt is dismissed, either via OK or Cancel.
     //      It receives a single argument; either the entered text (if OK was chosen) or null (if Cancel
     //      was chosen).
-    ui.prompt = function (text, defaultInputText, callback) {
+    ui.prompt = function (text, defaultInputText, ok, cancel, callback) {
 
         // These variables need to be declared at this level since they are used
         // in multiple functions.
@@ -1114,7 +1119,7 @@
 
 
         // Create the text input box form/window.
-        var createDialog = function () {
+        var createDialog = function (ok, cancel) {
 
             // The main dialog box.
             dialog = doc.createElement("div");
@@ -1156,7 +1161,7 @@
             var okButton = doc.createElement("input");
             okButton.type = "button";
             okButton.onclick = function () { return close(false); };
-            okButton.value = "OK";
+            okButton.value = ok;
             style = okButton.style;
             style.margin = "10px";
             style.display = "inline";
@@ -1167,7 +1172,7 @@
             var cancelButton = doc.createElement("input");
             cancelButton.type = "button";
             cancelButton.onclick = function () { return close(true); };
-            cancelButton.value = "Cancel";
+            cancelButton.value = cancel;
             style = cancelButton.style;
             style.margin = "10px";
             style.display = "inline";
@@ -1193,12 +1198,11 @@
             dialog.style.marginLeft = -(position.getWidth(dialog) / 2) + "px";
 
         };
-
         // Why is this in a zero-length timeout?
         // Is it working around a browser bug?
         setTimeout(function () {
 
-            createDialog();
+            createDialog(ok, cancel);
 
             var defTextLen = defaultInputText.length;
             if (input.selectionStart !== undefined) {
@@ -1888,10 +1892,10 @@
 
             if (isImage) {
                 if (!this.hooks.insertImageDialog(linkEnteredCallback))
-                    ui.prompt(this.getString("imagedialog"), imageDefaultText, linkEnteredCallback);
+                    ui.prompt(this.getString("imagedialog"), imageDefaultText, this.getString("ok"), this.getString("cancel"), linkEnteredCallback);
             }
             else {
-                ui.prompt(this.getString("linkdialog"), linkDefaultText, linkEnteredCallback);
+                ui.prompt(this.getString("linkdialog"), linkDefaultText, this.getString("ok"), this.getString("cancel"), linkEnteredCallback);
             }
             return true;
         }
