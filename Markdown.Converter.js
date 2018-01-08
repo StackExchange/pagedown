@@ -680,7 +680,7 @@ else
         function writeAnchorTag(wholeMatch, m1, m2, m3, m4, m5, m6, m7) {
             if (m7 == undefined) m7 = "";
             var whole_match = m1;
-            var link_text = m2.replace(/:\/\//g, "~P"); // to prevent auto-linking withing the link. will be converted back after the auto-linker runs
+            var link_text = m2.replace(/:\/\//g, "~P"); // to prevent auto-linking within the link. will be converted back after the auto-linker runs
             var link_id = m3.toLowerCase();
             var url = m4;
             var title = m7;
@@ -1277,7 +1277,7 @@ else
             //     (?=                          (lookahead; we're not capturing this, just listing legal possibilities)
             //         \W_                      If the delimiter is _, then this last character must be non-word non-underscore (extra-word emphasis only)
             //         |
-            //         (?!\*)                   otherwise, we list two possiblities for * as the delimiter; in either case, the last characters cannot be an asterisk itself
+            //         (?!\*)                   otherwise, we list two possibilities for * as the delimiter; in either case, the last characters cannot be an asterisk itself
             //         (?:
             //             [\W_]\*              this last character can be non-word (extra-word emphasis)...
             //             |
